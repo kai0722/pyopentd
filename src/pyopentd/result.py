@@ -28,7 +28,7 @@ class SaveFile(otd.Results.Dataset.SaveFile):
 
     def __init__(self, sav_path):
         super().__init__(sav_path)
-        self.times = self.GetTimes().GetValues()[:]
+        self.times = list(self.GetTimes().GetValues())[:]
         self.sav_path = sav_path
         self.get_pcs_file()
 
@@ -42,7 +42,7 @@ class SaveFile(otd.Results.Dataset.SaveFile):
             topology (OpenTDv62.Results.Dataset.Topology):OpenTD 62 Class Reference.chmを参照。IDatasetTopologyの中に詳細な構成が書かれている。
         """
         record_list = self.GetRecordNumbers()
-        times = self.GetTimes().GetValues()[:]
+        times = list(self.GetTimes().GetValues())[:]
         if record_index < 0:
             record_index = len(times) + record_index
         record_number = record_list[record_index]
@@ -77,22 +77,6 @@ class SaveFile(otd.Results.Dataset.SaveFile):
         return node_names
 
     def get_data(self, node_list):
-        """時系列データ（結果）の取得（pandas.core.frame.DataFrameで出力）
-
-        Args:
-            node_list (list): ノードのリスト
-        Returns:
-            pandas.core.frame.DataFrame: 時系列データ。ノードリストの情報に加えて、時間情報も追加されている。
-        Note:
-            node_listの要素は、"AAA.1"ではなく、"AAA.T1"や"AAA.Q1"という形式で指定する。
-        """
-        data = self.get_data_array(node_list)
-        df = pd.DataFrame(data, columns=node_list)
-        times = self.GetTimes().GetValues()[:]
-        df_times = pd.DataFrame(times, columns=["Times"])
-        return pd.concat([df_times, df], axis=1)
-
-    def get_data_array(self, node_list):
         """時系列データ（結果）の取得（numpy.arrayで出力）
 
         Args:
@@ -105,11 +89,10 @@ class SaveFile(otd.Results.Dataset.SaveFile):
         data_td = self.GetData(node_list)
         data = []
         for i in range(data_td.Count):
-            tmp = data_td[i].GetValues()[:]
+            tmp = list(data_td[i].GetValues())[:]
             if ".T" in node_list[i]:
                 tmp = [a - 273.15 for a in tmp]
             data.append(tmp)
-        return np.array(data).T
 
     def get_data_value(self, node_list, time_index):
         """単一の時系列データ（結果）の取得（numpy.arrayで出力）
@@ -124,11 +107,11 @@ class SaveFile(otd.Results.Dataset.SaveFile):
         """
         data_td = self.GetData(node_list)
         data = []
-        times = self.GetTimes().GetValues()[:]
+        times = list(self.GetTimes().GetValues())[:]
         if time_index < 0:
             time_index = len(times) + time_index
         for i in range(data_td.Count):
-            tmp = data_td[i].GetValues()[time_index]
+            tmp = list(data_td[i].GetValues())[time_index]
             if ".T" in node_list[i]:
                 tmp -= 273.15
             data.append(tmp)

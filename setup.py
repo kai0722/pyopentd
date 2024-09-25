@@ -3,35 +3,40 @@
 # License: MIT License
 
 from setuptools import setup, find_packages
+import re
+import os
 
-# import src.pyopentd
-from src import pyopentd
+# Function to read the version from __init__.py without importing the package
+def get_version():
+    init_file = os.path.join("src", "pyopentd", "__init__.py")
+    with open(init_file, "r", encoding="utf-8") as f:
+        init_content = f.read()
+    version_match = re.search(r"__version__\s*=\s*['\"]([^'\"]+)['\"]", init_content)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
 
-DESCRIPTION = ""
+DESCRIPTION = "Your package description here."
 NAME = "pyopentd"
 AUTHOR = "Tomoki Nishikawa"
 AUTHOR_EMAIL = "nishitomo206@gmail.com"
 URL = "https://github.com/nishitomo206/pyopentd"
 LICENSE = "MIT License"
 DOWNLOAD_URL = "https://github.com/nishitomo206/pyopentd"
-VERSION = pyopentd.__version__
-# PYTHON_REQUIRES = ">=3.6"
+VERSION = get_version()
 
-INSTALL_REQUIRES = []
+# Define your dependencies
+INSTALL_REQUIRES = [
+    "pythonnet>=3.0.0"  # Specify the required version
+]
 
 EXTRAS_REQUIRE = {}
 
-# PACKAGES = [
-#     'pyopentd'
-# ]
-
-CLASSIFIERS = []
-
-# with open('README.rst', 'r') as fp:
-#     readme = fp.read()
-# with open('CONTACT.txt', 'r') as fp:
-#     contacts = fp.read()
-# long_description = readme + '\n\n' + contacts
+CLASSIFIERS = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 setup(
     name=NAME,
@@ -40,12 +45,11 @@ setup(
     maintainer=AUTHOR,
     maintainer_email=AUTHOR_EMAIL,
     description=DESCRIPTION,
-    #   long_description=long_description,
     license=LICENSE,
     url=URL,
     version=VERSION,
     download_url=DOWNLOAD_URL,
-    #   python_requires=PYTHON_REQUIRES,
+    python_requires=">=3.6",
     install_requires=INSTALL_REQUIRES,
     extras_require=EXTRAS_REQUIRE,
     packages=find_packages(where="src"),
