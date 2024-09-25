@@ -223,7 +223,8 @@ class ThermalDesktop(otd.ThermalDesktop):
         df_times = pd.DataFrame(times, columns=["Times"])
         # 距離時系列
         radiuses = orbit.HrOrbitRadiusArray
-        df_radiuses = pd.DataFrame(radiuses, columns=["radius"])
+        radiuses_floats = [float(x) for x in radiuses]  # Convert to floats
+        df_radiuses = pd.DataFrame(radiuses_floats, columns=["radius"])
         return pd.concat([df_times, df_sun, df_planet, df_radiuses], axis=1)
 
     def get_nodes(self):
@@ -466,7 +467,7 @@ class ThermalDesktop(otd.ThermalDesktop):
         transient,
         time_end=0,
         run_dir=None,
-        sumodels_not_built=[],
+        submodels_not_built=[],
         restart_file=None,
         force_reset=False,
     ):
@@ -504,10 +505,10 @@ class ThermalDesktop(otd.ThermalDesktop):
             case.origin.RestartFile = restart_file
 
         # BuildTypeの指定（シミュレーションしないサブモデルの指定）
-        if sumodels_not_built != []:
-            case.origin.BuildType = 2
+        if submodels_not_built != []:
+            case.origin.BuildType = otd.CaseSet.BuildTypes.BUILDDEFINED
             tmp_list = List[str]()
-            for submodel in sumodels_not_built:
+            for submodel in submodels_not_built:
                 tmp_list.Add(submodel)
             case.origin.SubmodelsNotBuilt = tmp_list
 
@@ -536,8 +537,8 @@ class ThermalDesktop(otd.ThermalDesktop):
 
         if transient_type == 0:  # constant heatload の作成
             # typeの変更
-            heatload.HeatLoadTransientType = 0
-            heatload.TimeDependentSteadyStateType = 0
+            heatload.HeatLoadTransientType = otd.RcHeatLoadData.HeatLoadTransientTypes.CONSTANT_HEAT_LOAD
+            heatload.TimeDependentSteadyStateType = otd.RcHeatLoadData.TimeDependentSteadyStateTypes.TIME_AVERAGE
             if value == -1:
                 print(
                     "MYWARNING (in pyopentd.main.create_heatload): ヒートロードのvalueが指定されていません。"
@@ -554,8 +555,8 @@ class ThermalDesktop(otd.ThermalDesktop):
                     "MYERROR (in pyopentd.main.create_heatload): time_arrayとvalue_arrayの長さが異なります。"
                 )
             # typeの変更
-            heatload.HeatLoadTransientType = 1
-            heatload.TimeDependentSteadyStateType = 1
+            heatload.HeatLoadTransientType = otd.RcHeatLoadData.HeatLoadTransientTypes.TIME_VARY_HEAT_LOAD
+            heatload.TimeDependentSteadyStateType = otd.RcHeatLoadData.TimeDependentSteadyStateTypes.TIME_INTERP
             # time arrayの変更
             TimeArray = List[System.String]()
             for time in time_array:
@@ -621,8 +622,8 @@ class ThermalDesktop(otd.ThermalDesktop):
             heater.Layer = layer
 
         # TODO ss_methodの指定
-        heater.SSMethod = 1
-        heater.SSPowerPer = 0
+        heater.SSMethod = otd.RcHeaterData.HeaterSteadyStateOptions.SS_CONSTANT_POWER
+        heater.SSPowerPer = 0.0
 
         # times, scalesの指定
         if time_list != None or scale_list != None:
@@ -858,9 +859,9 @@ class Case:
             symbol_value_list[index] = str(value)
         else:
             # print("シンボルが見つかりませんでした、追加します。")
-            symbol_name_list.append(name)
-            symbol_value_list.append(str(value))
-            symbol_comment_list.append("")
+            symbol_name_list.Add(name)
+            symbol_value_list.Add(str(value))
+            symbol_comment_list.Add("")
         symbol_names = List[str]()
         symbol_values = List[str]()
         symbol_comments = List[str]()
@@ -894,7 +895,8 @@ class Case:
         rad_task = otd.RadiationTaskData()
         rad_task.AnalGroup = analysis_group  # Analysis Groupの指定
         rad_task.TypeCalc = (
-            calc_type  # [0: Radks, 1: Heating Rates, 2: Articulating Radks]
+            # [0: Radks, 1: Heating Rates, 2: Articulating Radks]
+            otd.RadiationTaskData.calcType.RADK if calc_type == 0 else ( otd.RadiationTaskData.calcType.HEATRATE if calc_type == 1 else otd.RadiationTaskData.calcType.ARTRADK) 
         )
         if calc_type == 1 or calc_type == 2:
             rad_task.OrbitName = orbit_name
