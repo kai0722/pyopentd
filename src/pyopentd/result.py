@@ -93,6 +93,10 @@ class SaveFile(otd.Results.Dataset.SaveFile):
             if ".T" in node_list[i]:
                 tmp = [a - 273.15 for a in tmp]
             data.append(tmp)
+        df = pd.DataFrame(np.array(data).transpose(), columns=node_list)
+        times = list(self.GetTimes().GetValues())[:]
+        df_times = pd.DataFrame(times, columns=["Times"])
+        return pd.concat([df_times, df], axis=1)
 
     def get_data_value(self, node_list, time_index):
         """単一の時系列データ（結果）の取得（numpy.arrayで出力）
