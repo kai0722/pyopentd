@@ -237,7 +237,7 @@ class SaveFile(otd.Results.Dataset.SaveFile):
             rad_matrix, index=node_list, columns=node_list
         )
         df_cond_matrix = pd.DataFrame(
-            rad_matrix, index=node_list, columns=node_list
+            cond_matrix, index=node_list, columns=node_list
         )
 
         return df_rad_matrix, df_cond_matrix
